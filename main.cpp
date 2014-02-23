@@ -3,7 +3,11 @@
 
 int main() {
 	SQLDatabase db;
-	db.openDatabase("File name!\n");
+	try {
+		db.openDatabase("File name!\n");
+	} catch (int exc) {
+		std::cout << "Database open() error = " << exc << std::endl;
+	}
 	std::cout << "Hello World\n";
 
 	return 0;
