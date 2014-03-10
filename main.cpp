@@ -1,15 +1,15 @@
 #include "SQLDatabase.h"
 #include <iostream>
+#include "money.h"
+
+extern bool moneyTestMain(bool);
 
 int main() {
-	SQLDatabase db;
-	try {
-		db.openDatabase("File name!\n");
-	} catch (int exc) {
-		std::cout << "Database open() error = " << exc << std::endl;
-	}
-	std::cout << "Hello World\n";
+	bool testPassed = moneyTestMain(true);
+
+	std::cout << "Money tests "
+						<< ((testPassed) ? "PASSED" : "FAILED")
+						<< "\n";
 
 	return 0;
 }
-
