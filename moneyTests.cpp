@@ -3,6 +3,7 @@
 
  #include "money.h"
  #include <iostream>
+ #include <string>
 
 static bool printOut = true;
 
@@ -21,7 +22,13 @@ bool longSetAmountTest(unsigned long long,
                        unsigned long long,
                        unsigned long long);
 bool stringSetAmountTest(std::string, unsigned long long);
-bool toStringTest(unsigned long long, std::string);
+bool toStringTest(unsigned long long, std::string,
+                  bool wDollarSign,
+                  unsigned int minDigits,
+                  bool useSetFormat);
+bool toStreamTest(unsigned long long, std::string,
+                  bool wDollarSign,
+                  unsigned int minDigits);
 bool toDecimalTest(unsigned long long amount, double expected);
 
 
@@ -147,13 +154,41 @@ int constructorTestSuite() {
 int toStringTestSuite() {
   int testsFailed = 0;
 
-  testsFailed += toStringTest(100, "$1.00");
-  testsFailed += toStringTest(10, "$0.10");
-  testsFailed += toStringTest(0, "$0.00");
-  testsFailed += toStringTest(1000, "$10.00");
-  testsFailed += toStringTest(1000010, "$10000.10");
-  testsFailed += toStringTest(1, "$0.01");
-  testsFailed += toStringTest(99, "$0.99");
+  //Standard tests
+  testsFailed += toStringTest(100, "$1.00", true, 0, false);
+  testsFailed += toStringTest(10, "$0.10", true, 0, false);
+  testsFailed += toStringTest(0, "$0.00", true, 0, false);
+  testsFailed += toStringTest(1000, "$10.00", true, 0, false);
+  testsFailed += toStringTest(1000010, "$10000.10", true, 0, false);
+  testsFailed += toStringTest(1, "$0.01", true, 0, false);
+
+  //With padding
+  testsFailed += toStringTest(99, "$00.99", true, 2, false);
+  testsFailed += toStringTest(100, "$001.00", true, 3, false);
+  testsFailed += toStringTest(1000, "$00010.00", true, 5, false);
+  testsFailed += toStringTest(12345, "$00123.45", true, 5, false);
+
+  //With padding and no dollar sign
+  testsFailed += toStringTest(99, "00.99", false, 2, false);
+  testsFailed += toStringTest(100, "001.00", false, 3, false);
+  testsFailed += toStringTest(1000, "00010.00", false, 5, false);
+  testsFailed += toStringTest(12345, "00123.45", false, 5, false);
+
+  //Now the same only using setFormat instead
+  testsFailed += toStringTest(99, "$00.99", true, 2, true);
+  testsFailed += toStringTest(100, "$001.00", true, 3, true);
+  testsFailed += toStringTest(1000, "$00010.00", true, 5, true);
+  testsFailed += toStringTest(12345, "$00123.45", true, 5, true);
+  testsFailed += toStringTest(99, "00.99", false, 2, true);
+  testsFailed += toStringTest(100, "001.00", false, 3, true);
+  testsFailed += toStringTest(1000, "00010.00", false, 5, true);
+  testsFailed += toStringTest(12345, "00123.45", false, 5, true);
+
+  //Using streams
+  testsFailed += toStreamTest(100, "$001.00", true, 3);
+  testsFailed += toStreamTest(199, "$1.99", true, 0);
+  testsFailed += toStreamTest(100, "001.00", false, 3);
+  testsFailed += toStreamTest(10000, "100.00", false, 0);
 
   return testsFailed;
 
@@ -283,11 +318,21 @@ bool stringConstructorTest(std::string amount,
  }
 
 /* Run test with string and compare to expected value. */
-bool toStringTest(unsigned long long amount, std::string expected)
+bool toStringTest(unsigned long long amount, std::string expected,
+                  bool wDollarSign, unsigned int minDigits, bool useSetFormat)
 {
     Currency testCurrency(0, amount);
-    bool testPassed = !expected.compare(testCurrency.toString());
+    bool testPassed = false;
+    std::string result;
 
+    if (useSetFormat) {
+      testCurrency.setFormat(wDollarSign, minDigits);
+      result = testCurrency.toString();
+    } else {
+      result = testCurrency.toString(wDollarSign, minDigits);
+    }
+
+    testPassed = !expected.compare(result);
 
     if (printOut) {
       std::cout << "Testing string conversion ["
@@ -295,12 +340,33 @@ bool toStringTest(unsigned long long amount, std::string expected)
               << "TEST "
               << ((testPassed) ? "PASSED" : "FAILED")
               << ": ["
-              << testCurrency.toString() << "]"
+              << result << "]"
               << " expected: [" << expected << "]"
               << std::endl;
     }
 
     return !testPassed;
+}
+
+/* Run test with string and compare to expected value. */
+bool toStreamTest(unsigned long long amount, std::string expected,
+                  bool wDollarSign, unsigned int minDigits)
+{
+    Currency testCurrency(0, amount);
+
+    testCurrency.setFormat(wDollarSign, minDigits);
+
+    if (printOut) {
+      std::cout << "Testing string conversion ["
+              << amount << "] | "
+              << "VISUAL TEST "
+              << ": ["
+              << testCurrency << "]"
+              << " expected: [" << expected << "]"
+              << std::endl;
+    }
+
+    return !true;
 }
 
 /* Run test with string and compare to expected value. */

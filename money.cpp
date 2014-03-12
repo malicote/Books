@@ -1,19 +1,22 @@
 #include "money.h"
-#include <iostream>
 #include <stdlib.h>
-Currency::Currency() {
-  cents_ = 0;
-}
+Currency::Currency()
+: cents_(0), printWithDollarSign_(0), numZeroPadding_(0)
+{}
 
 //Can instantiate with dollars and cents.
 //Cents can be > 0 to instantiate only with
 //cents.
 Currency::Currency(unsigned long long dollars,
-                   unsigned long long cents) {
-  setAmount(dollars,cents);
+                   unsigned long long cents)
+: printWithDollarSign_(0), numZeroPadding_(0)
+{
+  setAmount(dollars, cents);
 }
 
-Currency::Currency(std::string amount) {
+Currency::Currency(std::string amount)
+: printWithDollarSign_(0), numZeroPadding_(0)
+{
   setAmount(amount);
 }
 
@@ -87,17 +90,24 @@ void Currency::setAmount(unsigned long long dollars, unsigned long long cents) {
   cents_ += dollars*100;
 }
 
+std::string Currency::toString() const{
+  return toString(printWithDollarSign_, numZeroPadding_);
+}
+
 // Returns formatted as $X---X.XX
-std::string Currency::toString() {
+std::string Currency::toString(bool wDollarSign, unsigned int minDigits) const {
 
   int length = 0;
+
   //Max digits + $, '.', and 2 decimals, and null
   char value[MAX_DOLLAR_DIGITS + 5] = {0};
 
   unsigned long long dollars = cents_ / 100;
   unsigned long long cents = cents_ % 100;
+  const char *dollarSign = (wDollarSign) ? "$" : "";
 
-  length = snprintf(value, MAX_DOLLAR_DIGITS+5, "$%llu.%02llu", dollars, cents);
+  length += snprintf(value, MAX_DOLLAR_DIGITS+5, "%s%0*llu.%02llu",
+                           dollarSign, minDigits, dollars, cents);
 
   if (*value == '\0' || length < 0) {
     return "$0.00";
@@ -105,4 +115,16 @@ std::string Currency::toString() {
 
   std::string result(value, length);
   return result;
+}
+
+/* For use with ostreams */
+void Currency::setFormat(bool wDollarSign, unsigned int numZerosPadded) {
+  printWithDollarSign_ = wDollarSign;
+  numZeroPadding_ = numZerosPadded;
+}
+
+// Print to stream with set formatting.
+std::ostream& operator<< (std::ostream& os, const Currency& c) {
+  os << c.toString();
+  return os;
 }

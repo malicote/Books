@@ -2,6 +2,7 @@
 #define _MONEY_H_
 
 #include <string>
+#include <iostream>
 
 /* Things this class should do:
 -store money
@@ -11,6 +12,8 @@
 -translate float to money
 -return float rep of money
 */
+
+/* Safe to use copy constructor with no overloading */
 class Currency {
 public:
   /* Consts */
@@ -20,13 +23,23 @@ public:
 
   /* Constructors */
   Currency();
-  Currency(unsigned long long, unsigned long long);
+  Currency(unsigned long long dollars, unsigned long long cents);
   Currency(std::string amount);
 
-  std::string toString();
+  /* Return as string, padding whole number with zeros
+   * to at least minDigits.  Note minDigits=0 will still
+   * print leading zero when amount < $1.
+   */
+  std::string toString(bool wDollarSign,
+                       unsigned int minDigits) const;
+
+
+  /* With no arguments, uses format set by setFormat */
+  std::string toString() const;
+
   double toDecimal();
   void setAmount(std::string amount);
-  void setAmount(unsigned long long, unsigned long long);
+  void setAmount(unsigned long long dollars, unsigned long long cents);
 
   //May want to overload = operator with string / decimal
   //Also overload < > <= >= and ==
@@ -44,12 +57,17 @@ public:
     return cents_;
   }
 
+  void setFormat(bool wDollarSign, unsigned int numZerosPadded);
+
+  // Print to stream with set formatting.
+  friend std::ostream& operator<< (std::ostream& os, const Currency& c);
 private:
 
   /* Store everything as cents for now  */
   unsigned long long cents_;
 
-
-
+  bool printWithDollarSign_;
+  unsigned int numZeroPadding_;
 };
+
 #endif
