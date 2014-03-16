@@ -11,6 +11,7 @@ int constructorTestSuite();
 int setAmountTestSuite();
 int toStringTestSuite();
 int toDecimalTestSuite();
+int operatorTestSuite();
 
 bool emptyConstructorTest();
 bool longConstructorTest(unsigned long long,
@@ -30,7 +31,8 @@ bool toStreamTest(unsigned long long, std::string,
                   bool wDollarSign,
                   unsigned int minDigits);
 bool toDecimalTest(unsigned long long amount, double expected);
-
+bool operatorTest(unsigned long long lhs, unsigned long long rhs,
+                  const std::string& op);
 
 //Returns true if passed.
 bool moneyTestMain(bool showPrintOuts) {
@@ -60,9 +62,102 @@ bool moneyTestMain(bool showPrintOuts) {
   numFailed += toDecimalTestSuite();
   std::cout << numFailed << " toDecimal tests failed" << std::endl;
 
+  std::cout << "Running comparison operator tests...\n";
+  numFailed += operatorTestSuite();
+  std::cout << numFailed << " comparison tests failed" << std::endl;
+
   return (numFailed == 0);
 }
 
+int operatorTestSuite() {
+  int testsFailed = 0;
+
+  //Simple zeros test.
+  testsFailed += operatorTest(0, 0, "==");
+  testsFailed += operatorTest(0, 0, "!=");
+  testsFailed += operatorTest(0, 0, ">");
+  testsFailed += operatorTest(0, 0, "<");
+  testsFailed += operatorTest(0, 0, ">=");
+  testsFailed += operatorTest(0, 0, "<=");
+
+  //Left side
+  testsFailed += operatorTest(100, 0, "==");
+  testsFailed += operatorTest(100, 0, "!=");
+  testsFailed += operatorTest(100, 0, ">");
+  testsFailed += operatorTest(100, 0, "<");
+  testsFailed += operatorTest(100, 0, ">=");
+  testsFailed += operatorTest(100, 0, "<=");
+
+  //Right side
+  testsFailed += operatorTest(0, 100, "==");
+  testsFailed += operatorTest(0, 100, "!=");
+  testsFailed += operatorTest(0, 100, ">");
+  testsFailed += operatorTest(0, 100, "<");
+  testsFailed += operatorTest(0, 100, ">=");
+  testsFailed += operatorTest(0, 100, "<=");
+
+  return testsFailed;
+}
+
+bool operatorTest(unsigned long long lhs, unsigned long long rhs,
+                  const std::string& op)
+{
+  Currency testLHS(0, lhs);
+  Currency testRHS(0, rhs);
+  /* 0 = print bool comparisons, 1 = print math ops */
+  int printSwitch = 0;
+  std::string expectedString;
+  std::string actualString;
+
+  bool result = false;
+  bool expected = false;
+  bool actual = false;
+
+  if (op == "==") {
+    expected = (lhs == rhs);
+    actual = (testLHS == testRHS);
+  } else if (op == "!=") {
+    expected = (lhs != rhs);
+    actual = (testLHS != testRHS);
+  } else if (op == ">") {
+    expected = (lhs > rhs);
+    actual = (testLHS > testRHS);
+  } else if (op == ">=") {
+    expected = (lhs >= rhs);
+    actual = (testLHS >= testRHS);
+  } else if (op == "<") {
+    expected = (lhs < rhs);
+    actual = (testLHS < testRHS);
+  } else if (op == "<=") {
+    expected = (lhs <= rhs);
+    actual = (testLHS <= testRHS);
+  }
+
+  result = (actual == expected);
+
+  switch(printSwitch) {
+    case 0:
+      expectedString = ((expected) ? "TRUE" : "FALSE");
+      actualString = ((actual) ? "TRUE" : "FALSE");
+      break;
+    case 1:
+      expectedString = expected;
+      actualString = actual;
+    default:
+      break;
+  }
+
+  if (printOut) {
+    std::cout << "Testing comparison: \"" << lhs  << " "
+       << op << " " << rhs << "\""
+       << "; TEST: " << ((result) ? "PASSSED" : "FAILED")
+       << " | Expected value: [" << expectedString << "]"
+       << " | Actual value: [" << actualString << "]"
+       << std::endl;
+  }
+  // Return true if it failed.
+  return !result;
+}
 int setAmountTestSuite() {
   int testsFailed = 0;
 
