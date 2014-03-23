@@ -14,25 +14,35 @@ int toDecimalTestSuite();
 int operatorTestSuite();
 
 bool emptyConstructorTest();
-bool longConstructorTest(unsigned long long,
-                         unsigned long long,
-                         unsigned long long);
+bool longConstructorTest(long long,
+                         long long,
+                         long long);
 
-bool stringConstructorTest(std::string, unsigned long long);
-bool longSetAmountTest(unsigned long long,
-                       unsigned long long,
-                       unsigned long long);
-bool stringSetAmountTest(std::string, unsigned long long);
-bool toStringTest(unsigned long long, std::string,
+bool stringConstructorTest(std::string, long long);
+bool longSetAmountTest(long long,
+                       long long,
+                       long long);
+bool stringSetAmountTest(std::string, long long);
+bool toStringTest(long long, std::string,
                   bool wDollarSign,
                   unsigned int minDigits,
                   bool useSetFormat);
-bool toStreamTest(unsigned long long, std::string,
+bool toStreamTest(long long, std::string,
                   bool wDollarSign,
                   unsigned int minDigits);
-bool toDecimalTest(unsigned long long amount, double expected);
-bool operatorTest(unsigned long long lhs, unsigned long long rhs,
+bool toDecimalTest(long long amount, double expected);
+bool operatorTest(long long lhs, long long rhs,
                   const std::string& op);
+
+std::string intToString(int integer) {
+  char *c_string = NULL;
+
+  sprintf(c_string, "%d", integer);
+
+  std::string intAsString(c_string);
+
+  return intAsString;
+}
 
 //Returns true if passed.
 bool moneyTestMain(bool showPrintOuts) {
@@ -96,10 +106,31 @@ int operatorTestSuite() {
   testsFailed += operatorTest(0, 100, ">=");
   testsFailed += operatorTest(0, 100, "<=");
 
+  // Negatives
+  testsFailed += operatorTest(0, -100, "==");
+  testsFailed += operatorTest(-100, -100, "==");
+  testsFailed += operatorTest(-100, 100, "==");
+
+  testsFailed += operatorTest(-100, 100, "!=");
+  testsFailed += operatorTest(100, -100, "!=");
+  testsFailed += operatorTest(-100, -100, "!=");
+
+  testsFailed += operatorTest(-100, 100, ">");
+  testsFailed += operatorTest(100, -100, ">");
+  testsFailed += operatorTest(-100, -100, ">");
+  testsFailed += operatorTest(-1000, 100, ">");
+  testsFailed += operatorTest(-100, -10, ">");
+
+  testsFailed += operatorTest(-100, 100, ">=");
+  testsFailed += operatorTest(100, -100, ">=");
+  testsFailed += operatorTest(-100, -100, ">=");
+  testsFailed += operatorTest(-1000, 100, ">=");
+  testsFailed += operatorTest(-100, -10, ">=");
+
   return testsFailed;
 }
 
-bool operatorTest(unsigned long long lhs, unsigned long long rhs,
+bool operatorTest(long long lhs, long long rhs,
                   const std::string& op)
 {
   Currency testLHS(0, lhs);
@@ -112,6 +143,8 @@ bool operatorTest(unsigned long long lhs, unsigned long long rhs,
   bool result = false;
   bool expected = false;
   bool actual = false;
+  long long actual_ull = 0;
+  long long expected_ll = 0;
 
   if (op == "==") {
     expected = (lhs == rhs);
@@ -131,6 +164,11 @@ bool operatorTest(unsigned long long lhs, unsigned long long rhs,
   } else if (op == "<=") {
     expected = (lhs <= rhs);
     actual = (testLHS <= testRHS);
+  } else if (op == "+") {
+    expected_ll = lhs + rhs;
+    //Currency actualCurrency = testLHS + testRHS;
+    //actual_ull = actualCurrency.getAmount();
+    actual = (actual_ull == expected_ll);
   }
 
   result = (actual == expected);
@@ -141,8 +179,8 @@ bool operatorTest(unsigned long long lhs, unsigned long long rhs,
       actualString = ((actual) ? "TRUE" : "FALSE");
       break;
     case 1:
-      expectedString = expected;
-      actualString = actual;
+      expectedString = "" + intToString(expected_ll);
+      actualString = "" + intToString(actual_ull);
     default:
       break;
   }
@@ -187,8 +225,8 @@ int setAmountTestSuite() {
   //Over limit
   testsFailed += stringSetAmountTest("$9999999999999.99", 0);
 
-  //Do not accept negative numbers
-  testsFailed += stringSetAmountTest("-$150.23", 0);
+  //Accept negative numbers
+  testsFailed += stringSetAmountTest("-$150.23", -15023);
 
   return testsFailed;
 }
@@ -203,6 +241,10 @@ int constructorTestSuite() {
   testsFailed += longConstructorTest(100, 100, 10100);
   testsFailed += longConstructorTest(0, 100, 100);
   testsFailed += longConstructorTest(0, 0, 0);
+  testsFailed += longConstructorTest(-10, 5, -1005);
+  testsFailed += longConstructorTest(5, -10, -510);
+  testsFailed += longConstructorTest(-100, -100, -10100);
+
 
   // NULL
   testsFailed += stringConstructorTest("", 0);
@@ -225,8 +267,9 @@ int constructorTestSuite() {
   //Over limit
   testsFailed += stringConstructorTest("$9999999999999.99", 0);
 
-  //Do not accept negative numbers
-  testsFailed += stringConstructorTest("-$150.23", 0);
+  //Accept negative numbers
+  testsFailed += stringConstructorTest("-$150.23", -15023);
+  testsFailed += stringConstructorTest("-$00.00", 0);
 
   //Just dollars
   testsFailed += stringConstructorTest("$200", 20000);
@@ -256,18 +299,21 @@ int toStringTestSuite() {
   testsFailed += toStringTest(1000, "$10.00", true, 0, false);
   testsFailed += toStringTest(1000010, "$10000.10", true, 0, false);
   testsFailed += toStringTest(1, "$0.01", true, 0, false);
+  testsFailed += toStringTest(-1, "-$0.01", true, 0, false);
 
   //With padding
   testsFailed += toStringTest(99, "$00.99", true, 2, false);
   testsFailed += toStringTest(100, "$001.00", true, 3, false);
   testsFailed += toStringTest(1000, "$00010.00", true, 5, false);
   testsFailed += toStringTest(12345, "$00123.45", true, 5, false);
+  testsFailed += toStringTest(-12345, "-$00123.45", true, 5, false);
 
   //With padding and no dollar sign
   testsFailed += toStringTest(99, "00.99", false, 2, false);
   testsFailed += toStringTest(100, "001.00", false, 3, false);
   testsFailed += toStringTest(1000, "00010.00", false, 5, false);
   testsFailed += toStringTest(12345, "00123.45", false, 5, false);
+  testsFailed += toStringTest(-12345, "-00123.45", false, 5, false);
 
   //Now the same only using setFormat instead
   testsFailed += toStringTest(99, "$00.99", true, 2, true);
@@ -278,12 +324,15 @@ int toStringTestSuite() {
   testsFailed += toStringTest(100, "001.00", false, 3, true);
   testsFailed += toStringTest(1000, "00010.00", false, 5, true);
   testsFailed += toStringTest(12345, "00123.45", false, 5, true);
+  testsFailed += toStringTest(-12345, "-00123.45", false, 5, true);
 
   //Using streams
   testsFailed += toStreamTest(100, "$001.00", true, 3);
   testsFailed += toStreamTest(199, "$1.99", true, 0);
+  testsFailed += toStreamTest(-199, "-$1.99", true, 0);
   testsFailed += toStreamTest(100, "001.00", false, 3);
   testsFailed += toStreamTest(10000, "100.00", false, 0);
+  testsFailed += toStreamTest(-10000, "-100.00", false, 0);
 
   return testsFailed;
 
@@ -299,6 +348,8 @@ int toDecimalTestSuite() {
   testsFailed += toDecimalTest(10, 0.1);
   testsFailed += toDecimalTest(99, 0.99);
   testsFailed += toDecimalTest(90, 0.90);
+  testsFailed += toDecimalTest(0, 0.00);
+  testsFailed += toDecimalTest(-0, 0.0);
 
   return testsFailed;
 }
@@ -317,10 +368,10 @@ bool emptyConstructorTest() {
   return !testPassed;
 
 }
-/* RUn test with unsigned longs */
-bool longConstructorTest(unsigned long long dollars,
-                                unsigned long long cents,
-                                unsigned long long expected)
+/* RUn test with longs */
+bool longConstructorTest(long long dollars,
+                                long long cents,
+                                long long expected)
 {
   Currency testCurrency(dollars, cents);
   bool testPassed = (testCurrency.getAmount() == expected);
@@ -339,9 +390,9 @@ bool longConstructorTest(unsigned long long dollars,
   return !testPassed;
 }
 
-bool longSetAmountTest(unsigned long long dollars,
-                                unsigned long long cents,
-                                unsigned long long expected)
+bool longSetAmountTest(long long dollars,
+                                long long cents,
+                                long long expected)
 {
   Currency testCurrency;
   testCurrency.setAmount(dollars, cents);
@@ -363,7 +414,7 @@ bool longSetAmountTest(unsigned long long dollars,
 
 /* Run test with string and compare to expected value. */
 bool stringSetAmountTest(std::string amount,
-                                 unsigned long long expected)
+                                 long long expected)
 {
   Currency testCurrency;
   testCurrency.setAmount(amount);
@@ -389,7 +440,7 @@ bool stringSetAmountTest(std::string amount,
 
 /* Run test with string and compare to expected value. */
 bool stringConstructorTest(std::string amount,
-                                 unsigned long long expected)
+                                 long long expected)
 {
    Currency testCurrency(amount);
    bool testPassed = false;
@@ -413,7 +464,7 @@ bool stringConstructorTest(std::string amount,
  }
 
 /* Run test with string and compare to expected value. */
-bool toStringTest(unsigned long long amount, std::string expected,
+bool toStringTest(long long amount, std::string expected,
                   bool wDollarSign, unsigned int minDigits, bool useSetFormat)
 {
     Currency testCurrency(0, amount);
@@ -444,7 +495,7 @@ bool toStringTest(unsigned long long amount, std::string expected,
 }
 
 /* Run test with string and compare to expected value. */
-bool toStreamTest(unsigned long long amount, std::string expected,
+bool toStreamTest(long long amount, std::string expected,
                   bool wDollarSign, unsigned int minDigits)
 {
     Currency testCurrency(0, amount);
@@ -465,7 +516,7 @@ bool toStreamTest(unsigned long long amount, std::string expected,
 }
 
 /* Run test with string and compare to expected value. */
-bool toDecimalTest(unsigned long long amount, double expected)
+bool toDecimalTest(long long amount, double expected)
 {
   double epsilon = 0.000001;
   Currency testCurrency(0, amount);

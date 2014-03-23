@@ -7,8 +7,8 @@ Currency::Currency()
 //Can instantiate with dollars and cents.
 //Cents can be > 0 to instantiate only with
 //cents.
-Currency::Currency(unsigned long long dollars,
-                   unsigned long long cents)
+Currency::Currency(long long dollars,
+                   long long cents)
 : printWithDollarSign_(0), numZeroPadding_(0)
 {
   setAmount(dollars, cents);
@@ -25,8 +25,13 @@ Currency::Currency(std::string amount)
 bool Currency::isCurrencyDecimal(std::string num) {
   int decimalCount = 0;
 
+  //Check leading negative sign
+  if(num[0] == '-') {
+    num.erase(num.begin());
+  }
+
   //Check leading dollar sign
-  if(num[0] == '$') {
+  if(num[1] == '$') {
     num.erase(num.begin());
   }
 
@@ -55,6 +60,13 @@ double Currency::toDecimal() {
 void Currency::setAmount(std::string amount) {
   //Holds index of decimal
   size_t decimalIndex = 0;
+  int sign = 1;
+
+  //Check negative sign
+  if (amount[0] == '-') {
+    amount.erase(amount.begin());
+    sign = -1;
+  }
 
   //Check leading dollar sign
   if (amount[0] == '$') {
@@ -83,11 +95,27 @@ void Currency::setAmount(std::string amount) {
     substr = amount.substr(decimalIndex+1,2);
     cents_ += strtoull(substr.c_str(), NULL, 10);
   }
+
+  //Set correct sign
+  cents_ *= sign;
 }
 
-void Currency::setAmount(unsigned long long dollars, unsigned long long cents) {
+void Currency::setAmount(long long dollars, long long cents) {
+
+  int sign = 1;
+
+  // Either or both can be negative, and it will count as negative.
+  if (dollars < 0) {
+    sign = -1;
+    dollars *= sign;
+  } if(cents < 0) {
+    sign = -1;
+    cents *= sign;
+  }
+
   cents_ = cents;
   cents_ += dollars*100;
+  cents_ *= sign;
 }
 
 std::string Currency::toString() const{
@@ -98,16 +126,23 @@ std::string Currency::toString() const{
 std::string Currency::toString(bool wDollarSign, unsigned int minDigits) const {
 
   int length = 0;
+  //Max digits + '-', $, '.', and 2 decimals, and null
+  char value[MAX_DOLLAR_DIGITS + 6] = {0};
+  int sign = 1;
 
-  //Max digits + $, '.', and 2 decimals, and null
-  char value[MAX_DOLLAR_DIGITS + 5] = {0};
+  if (cents_ < 0) {
+    sign = -1;
+  }
 
-  unsigned long long dollars = cents_ / 100;
-  unsigned long long cents = cents_ % 100;
+  long long dollars = (sign * cents_) / 100;
+  long long cents = (sign * cents_) % 100;
+
+  const char *minusSign = (sign == -1) ? "-" : "";
   const char *dollarSign = (wDollarSign) ? "$" : "";
 
-  length += snprintf(value, MAX_DOLLAR_DIGITS+5, "%s%0*llu.%02llu",
-                           dollarSign, minDigits, dollars, cents);
+  length += snprintf(value, MAX_DOLLAR_DIGITS+5, "%s%s%0*llu.%02llu",
+                           minusSign, dollarSign,
+                           minDigits, dollars, cents);
 
   if (*value == '\0' || length < 0) {
     return "$0.00";

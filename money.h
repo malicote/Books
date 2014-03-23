@@ -23,7 +23,7 @@ public:
 
   /* Constructors */
   Currency();
-  Currency(unsigned long long dollars, unsigned long long cents);
+  Currency(long long dollars, long long cents);
   Currency(std::string amount);
 
   /* Return as string, padding whole number with zeros
@@ -39,7 +39,7 @@ public:
 
   double toDecimal();
   void setAmount(std::string amount);
-  void setAmount(unsigned long long dollars, unsigned long long cents);
+  void setAmount(long long dollars, long long cents);
 
   //May want to overload = operator with string / decimal
   //May want to overload +/- too.
@@ -50,7 +50,7 @@ public:
    */
   static bool isCurrencyDecimal(std::string);
 
-  inline unsigned long long getAmount() const{
+  inline long long getAmount() const{
     return cents_;
   }
 
@@ -62,7 +62,7 @@ public:
 private:
 
   /* Store everything as cents for now  */
-  unsigned long long cents_;
+  long long cents_;
 
   bool printWithDollarSign_;
   unsigned int numZeroPadding_;
