@@ -26,6 +26,10 @@ public:
   Currency(long long dollars, long long cents);
   Currency(std::string amount);
 
+  // Can be > 99;
+  Currency(long long cents);
+  Currency(double amount);
+
   /* Return as string, padding whole number with zeros
    * to at least minDigits.  Note minDigits=0 will still
    * print leading zero when amount < $1.
@@ -56,6 +60,15 @@ public:
 
   void setFormat(bool wDollarSign, unsigned int numZerosPadded);
 
+  Currency& operator+=(const Currency& rhs) {
+    cents_ += rhs.getAmount();
+    return *this;
+  }
+
+  Currency& operator-=(const Currency& rhs) {
+    cents_ -= rhs.getAmount();
+    return *this;
+  }
   // Print to stream with set formatting.
   friend std::ostream& operator<< (std::ostream& os, const Currency& c);
 
@@ -87,4 +100,13 @@ inline bool operator>=(const Currency& lhs, const Currency& rhs) {
   return ( !operator<(lhs, rhs) );
 }
 
+inline Currency operator+(Currency lhs, const Currency& rhs) {
+  lhs += rhs;
+  return lhs;
+}
+
+inline Currency operator-(Currency lhs, const Currency& rhs) {
+  lhs -= rhs;
+  return lhs;
+}
 #endif

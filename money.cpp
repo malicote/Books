@@ -5,13 +5,31 @@ Currency::Currency()
 {}
 
 //Can instantiate with dollars and cents.
-//Cents can be > 0 to instantiate only with
-//cents.
 Currency::Currency(long long dollars,
                    long long cents)
 : printWithDollarSign_(0), numZeroPadding_(0)
 {
   setAmount(dollars, cents);
+}
+
+// Useful for comparison with ints.
+Currency::Currency(long long cents)
+: printWithDollarSign_(0), numZeroPadding_(0)
+{
+  setAmount(0, cents);
+}
+
+// Useful for comparisons with int
+Currency::Currency(double amount)
+{
+    char* amount_c_str = NULL;
+
+    sprintf(amount_c_str, "%.2f", amount);
+
+    std::string amountString(amount_c_str);
+
+    setAmount(amountString);
+
 }
 
 Currency::Currency(std::string amount)
@@ -31,7 +49,7 @@ bool Currency::isCurrencyDecimal(std::string num) {
   }
 
   //Check leading dollar sign
-  if(num[1] == '$') {
+  if(num[0] == '$') {
     num.erase(num.begin());
   }
 
@@ -68,7 +86,7 @@ void Currency::setAmount(std::string amount) {
     sign = -1;
   }
 
-  //Check leading dollar sign
+  //Check leading dollar sign (after deleting leading -)
   if (amount[0] == '$') {
     amount.erase(amount.begin());
   }

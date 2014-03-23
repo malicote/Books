@@ -35,7 +35,7 @@ bool operatorTest(long long lhs, long long rhs,
                   const std::string& op);
 
 std::string intToString(int integer) {
-  char *c_string = NULL;
+  char c_string[64] = {0};
 
   sprintf(c_string, "%d", integer);
 
@@ -127,24 +127,72 @@ int operatorTestSuite() {
   testsFailed += operatorTest(-1000, 100, ">=");
   testsFailed += operatorTest(-100, -10, ">=");
 
+  // Addition tests:
+  testsFailed += operatorTest(0, 0, "+");
+  testsFailed += operatorTest(10, 0, "+");
+  testsFailed += operatorTest(0, 10, "+");
+  testsFailed += operatorTest(-10, 0, "+");
+  testsFailed += operatorTest(0, -100, "+");
+  testsFailed += operatorTest(-100, -100, "+");
+  testsFailed += operatorTest(10000, -1, "+");
+  testsFailed += operatorTest(1, -1, "+");
+
+  // Addition tests:
+  testsFailed += operatorTest(0, 0, "+=");
+  testsFailed += operatorTest(10, 3, "+=");
+  testsFailed += operatorTest(3, 10, "+=");
+  testsFailed += operatorTest(-10, 3, "+=");
+  testsFailed += operatorTest(0, -100, "+=");
+  testsFailed += operatorTest(-100, -100, "+=");
+  testsFailed += operatorTest(10000, -1, "+=");
+  testsFailed += operatorTest(1, -1, "+=");
+
+  // Subtraction tests:
+  testsFailed += operatorTest(0, 0, "-");
+  testsFailed += operatorTest(10, 3, "-");
+  testsFailed += operatorTest(3, 10, "-");
+  testsFailed += operatorTest(-10, 3, "-");
+  testsFailed += operatorTest(0, -100, "-");
+  testsFailed += operatorTest(-100, -100, "-");
+  testsFailed += operatorTest(10000, -1, "-");
+  testsFailed += operatorTest(1, -1, "-");
+
+  // Subtraction tests:
+  testsFailed += operatorTest(0, 0, "-=");
+  testsFailed += operatorTest(10, 3, "-=");
+  testsFailed += operatorTest(3, 10, "-=");
+  testsFailed += operatorTest(-10, 3, "-=");
+  testsFailed += operatorTest(0, -100, "-=");
+  testsFailed += operatorTest(-100, -100, "-=");
+  testsFailed += operatorTest(10000, -1, "-=");
+  testsFailed += operatorTest(1, -1, "-=");
+
   return testsFailed;
 }
 
 bool operatorTest(long long lhs, long long rhs,
                   const std::string& op)
 {
+  const bool TEST_PASSED = false;
+  const bool TEST_FAILED = true;
+
   Currency testLHS(0, lhs);
   Currency testRHS(0, rhs);
   /* 0 = print bool comparisons, 1 = print math ops */
-  int printSwitch = 0;
+  enum {
+    PRINT_BOOLEAN = 0,
+    PRINT_LONG_LONG = 1,
+  };
+  int printSwitch = PRINT_BOOLEAN;
+
   std::string expectedString;
   std::string actualString;
 
   bool result = false;
   bool expected = false;
   bool actual = false;
-  long long actual_ull = 0;
-  long long expected_ll = 0;
+  long long actual_long = 0;
+  long long expected_long = 0;
 
   if (op == "==") {
     expected = (lhs == rhs);
@@ -165,22 +213,39 @@ bool operatorTest(long long lhs, long long rhs,
     expected = (lhs <= rhs);
     actual = (testLHS <= testRHS);
   } else if (op == "+") {
-    expected_ll = lhs + rhs;
-    //Currency actualCurrency = testLHS + testRHS;
-    //actual_ull = actualCurrency.getAmount();
-    actual = (actual_ull == expected_ll);
+    printSwitch = PRINT_LONG_LONG;
+    expected_long = lhs + rhs;
+    Currency actualCurrency = testLHS + testRHS;
+    actual_long = actualCurrency.getAmount();
+  } else if (op == "+=") {
+    printSwitch = PRINT_LONG_LONG;
+    expected_long = lhs + rhs;
+    testLHS += testRHS;
+    actual_long = testLHS.getAmount();
+  } else if (op == "-") {
+    printSwitch = PRINT_LONG_LONG;
+    expected_long = lhs - rhs;
+    Currency actualCurrency = testLHS - testRHS;
+    actual_long = actualCurrency.getAmount();
+  } else if (op == "-=") {
+    printSwitch = PRINT_LONG_LONG;
+    expected_long = lhs - rhs;
+    testLHS -= testRHS;
+    actual_long = testLHS.getAmount();
+  } else {
+    return TEST_FAILED; //Fail if not defined.
   }
 
-  result = (actual == expected);
-
   switch(printSwitch) {
-    case 0:
+    case PRINT_BOOLEAN:
+      result = (actual == expected);
       expectedString = ((expected) ? "TRUE" : "FALSE");
       actualString = ((actual) ? "TRUE" : "FALSE");
       break;
-    case 1:
-      expectedString = "" + intToString(expected_ll);
-      actualString = "" + intToString(actual_ull);
+    case PRINT_LONG_LONG:
+      result = (actual_long == expected_long);
+      expectedString = intToString(expected_long);
+      actualString = intToString(actual_long);
     default:
       break;
   }
