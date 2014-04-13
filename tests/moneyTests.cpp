@@ -7,34 +7,34 @@
 
 static bool printOut = true;
 
-int constructorTestSuite();
-int setAmountTestSuite();
-int toStringTestSuite();
-int toDecimalTestSuite();
-int operatorTestSuite();
+static int constructorTestSuite();
+static int setAmountTestSuite();
+static int toStringTestSuite();
+static int toDecimalTestSuite();
+static int operatorTestSuite();
 
-bool emptyConstructorTest();
-bool longConstructorTest(long long,
+static bool emptyConstructorTest();
+static bool longConstructorTest(long long,
                          long long,
                          long long);
 
-bool stringConstructorTest(std::string, long long);
-bool longSetAmountTest(long long,
+static bool stringConstructorTest(std::string, long long);
+static bool longSetAmountTest(long long,
                        long long,
                        long long);
-bool stringSetAmountTest(std::string, long long);
-bool toStringTest(long long, std::string,
+static bool stringSetAmountTest(std::string, long long);
+static bool toStringTest(long long, std::string,
                   bool wDollarSign,
                   unsigned int minDigits,
                   bool useSetFormat);
-bool toStreamTest(long long, std::string,
+static bool toStreamTest(long long, std::string,
                   bool wDollarSign,
                   unsigned int minDigits);
-bool toDecimalTest(long long amount, double expected);
-bool operatorTest(long long lhs, long long rhs,
+static bool toDecimalTest(long long amount, double expected);
+static bool operatorTest(long long lhs, long long rhs,
                   const std::string& op);
 
-std::string intToString(int integer) {
+static std::string intToString(int integer) {
   char c_string[64] = {0};
 
   sprintf(c_string, "%d", integer);

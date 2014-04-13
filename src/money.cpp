@@ -1,5 +1,6 @@
 #include "money.h"
 #include <stdlib.h>
+
 Currency::Currency()
 : cents_(0), printWithDollarSign_(0), numZeroPadding_(0)
 {}

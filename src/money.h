@@ -4,15 +4,6 @@
 #include <string>
 #include <iostream>
 
-/* Things this class should do:
--store money
--translate string to money
--return string rep of money
--assumes USD for now
--translate float to money
--return float rep of money
-*/
-
 /* Safe to use copy constructor with no overloading */
 class Currency {
 public:
@@ -44,10 +35,6 @@ public:
   double toDecimal();
   void setAmount(std::string amount);
   void setAmount(long long dollars, long long cents);
-
-  //May want to overload = operator with string / decimal
-  //May want to overload +/- too.
-  //And * /
 
   /* Returns true if only decimal numbers and a single
    * decimal place are present.
