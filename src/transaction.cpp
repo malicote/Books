@@ -17,7 +17,7 @@ void clearTime(struct tm& date) {
 //Helper function to compare two date structs
 //Only compares: s/m/hr/day/month/year
 bool isSameDate(const struct tm& lhs, 
-														 const struct tm& rhs) {
+                const struct tm& rhs) {
   return (
     lhs.tm_sec == rhs.tm_sec &&
     lhs.tm_min == rhs.tm_min &&
