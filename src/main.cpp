@@ -1,7 +1,8 @@
-#include "SQLDatabase.h"
+//#include "SQLDatabase.h"
 #include <iostream>
 #include "money.h"
 #include "transaction.h"
+#include "account.h"
 
 extern bool moneyTestMain(bool);
 extern bool transactionTest_main();
